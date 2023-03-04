@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "pb/api";
+
+import "api/auth_delivery.proto";
+
+package pb;
+
+// The service definition
+service AuthService {
+  rpc Register (RegisterRequest) returns (RegisterResponse) {}
+
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+
+  rpc Revoke (RevokeRequest) returns (RevokeResponse) {}
+
+  rpc Verify (VerifyRequest) returns (VerifyResponse) {}
+
+  rpc Refresh (RefreshRequest) returns (RefreshResponse) {}
+
+  rpc List (ListRequest) returns (ListResponse) {}
+}

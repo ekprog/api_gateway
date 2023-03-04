@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "pb/api";
+
+import "api/app.proto";
+import "api/message.proto";
+
+// GET PROFILE
+
+message GetProfileRequest {
+  int64 user_id = 1;
+}
+
+message GetProfileResponse {
+  StatusResponse status = 1;
+  Profile profile = 2;
+}
+
+// UPDATE PROFILE
+
+message UpdateProfileRequest {
+  int64 user_id = 1;
+  string name = 2;
+  string photo = 3;
+}
+
+message UpdateProfileResponse {
+  StatusResponse status = 1;
+}

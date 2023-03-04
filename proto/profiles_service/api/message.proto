@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "pb/api";
+
+import "google/protobuf/timestamp.proto";
+
+
+message Profile {
+  int64 user_id = 1;
+  string name = 2;
+  string photo = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}

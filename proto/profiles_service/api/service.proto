@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option go_package = "pb/api";
+
+import "api/delivery.proto";
+
+package pb;
+
+// The service definition
+service ProfilesService {
+  rpc Get (GetProfileRequest) returns (GetProfileResponse) {}
+  rpc Update (UpdateProfileRequest) returns (UpdateProfileResponse) {}
+}
