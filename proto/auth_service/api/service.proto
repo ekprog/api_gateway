@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "pb/api";
+
+import "api/delivery.proto";
+import "api/app.proto";
+
+package pb;
+
+// Ping
+service StatusService {
+  rpc Ping (EmptyMessage) returns (StatusResponse) {}
+}
+
+
+// The service definition
+service AuthService {
+  rpc Register (RegisterRequest) returns (RegisterResponse) {}
+
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+
+  rpc Revoke (RevokeRequest) returns (RevokeResponse) {}
+
+  rpc Verify (VerifyRequest) returns (VerifyResponse) {}
+
+  rpc Refresh (RefreshRequest) returns (RefreshResponse) {}
+
+  rpc List (ListRequest) returns (ListResponse) {}
+}

@@ -1,199 +1,99 @@
 package delivery
 
 import (
-	"api_gateway/app"
-	"api_gateway/domain"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"microservice/app/core"
+	"microservice/domain"
+	"microservice/services"
+	"strconv"
 )
 
 type RouterDelivery struct {
-	log           app.Logger
-	routerService domain.RouterService
+	log           core.Logger
+	routesRepo    domain.RoutesRepository
+	authService   *services.AuthService
+	callerService *services.ProtoCallerService
 }
 
-func NewRouterDelivery(log app.Logger, routerService domain.RouterService) *RouterDelivery {
+func NewRouterDelivery(log core.Logger,
+	routesRepo domain.RoutesRepository,
+	authService *services.AuthService,
+	callerService *services.ProtoCallerService,
+) *RouterDelivery {
 	return &RouterDelivery{
 		log:           log,
-		routerService: routerService,
+		routesRepo:    routesRepo,
+		authService:   authService,
+		callerService: callerService,
 	}
 }
 
-func (d *RouterDelivery) Route(g *gin.RouterGroup) error {
+func (d *RouterDelivery) Route(c *gin.Context) {
 
-	d.routerService.SetRouter(g)
+	c.Header("content-type", "application/json")
 
-	// Init Services
-	err := d.routerService.MakeService(domain.Service{
-		ProtoServiceName: "AuthService",
-		ProtoDir:         "./proto/auth_service",
-		ProtoFilename:    "api/auth_service.proto",
-		HttpAddress:      "localhost:8086",
-	})
+	// Example: /auth/login
+	url := c.Request.URL.Path
+
+	// Find same route in db
+	route, err := d.routesRepo.GetByAddress(url)
 	if err != nil {
-		return errors.Wrap(err, "cannot make Test service")
+		d.log.ErrorWrap(err, "error while fetching route for routing %s", url)
+		c.JSON(500, domain.ServerError())
+		return
+	}
+	if route == nil {
+		d.log.Error("cannot find route for routing %s", url)
+		c.JSON(500, domain.NotFoundError())
+		return
 	}
 
-	err = d.routerService.MakeService(domain.Service{
-		ProtoServiceName: "TestService",
-		ProtoDir:         "./proto/test_service",
-		ProtoFilename:    "api/test_service.proto",
-		HttpAddress:      "localhost:8087",
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot make Test service")
+	// For call into Microservice
+	callOptions := services.ProtoCall{
+		Instance: route.Instance,
+		Service:  route.ProtoService,
+		Method:   route.ProtoMethod,
+		Data:     nil,
+		Headers:  map[string]string{},
 	}
 
-	err = d.routerService.MakeService(domain.Service{
-		ProtoServiceName: "ToDoService",
-		ProtoDir:         "./proto/todo_service",
-		ProtoFilename:    "api/service.proto",
-		HttpAddress:      "localhost:8071",
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot make ToDo service")
+	// AUTH
+	if route.AccessRole > domain.RoleGuest {
+		user, err := d.authService.VerifyRequest(c, route.AccessRole)
+		if err != nil {
+			_ = c.Error(errors.Wrap(err, "error while verifying request"))
+			c.JSON(500, domain.ServerError())
+			return
+		}
+		if user == nil {
+			c.JSON(500, domain.UnauthorizedError())
+			return
+		}
+		// Set headers
+		callOptions.Headers["user_id"] = strconv.FormatInt(user.Id, 10)
 	}
 
-	err = d.routerService.MakeService(domain.Service{
-		ProtoServiceName: "ProfilesService",
-		ProtoDir:         "./proto/profiles_service",
-		ProtoFilename:    "api/service.proto",
-		HttpAddress:      "localhost:8072",
-	})
+	//
+	// HERE REQUEST IS AUTHORIZED!
+	//
+
+	// Call
+	response := &domain.StatusResponse{}
+	bytes, err := d.callerService.CallAndParse(c, callOptions, response)
 	if err != nil {
-		return errors.Wrap(err, "cannot make ToDo service")
+		_ = c.Error(errors.Wrapf(err, "in instance error (%s)", route.Instance))
+		c.JSON(500, domain.ServerError())
+		return
 	}
 
-	// Auth
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/auth/register",
-		ProtoService: "AuthService",
-		ProtoMethod:  "Register",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
+	// Status
+	if response == nil || response.Status.Code != domain.Success {
+		c.Status(500)
+	} else {
+		c.Status(200)
 	}
 
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/auth/login",
-		ProtoService: "AuthService",
-		ProtoMethod:  "Login",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/auth/revoke",
-		ProtoService: "AuthService",
-		ProtoMethod:  "Revoke",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/auth/verify",
-		ProtoService: "AuthService",
-		ProtoMethod:  "Verify",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/auth/refresh",
-		ProtoService: "AuthService",
-		ProtoMethod:  "Refresh",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/auth/list",
-		ProtoService: "AuthService",
-		ProtoMethod:  "List",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	// Set Auth service
-	err = d.routerService.SetAuthService("AuthService")
-	if err != nil {
-		return errors.Wrap(err, "cannot add auth service")
-	}
-
-	// ROUTING
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/test/private",
-		ProtoService: "TestService",
-		ProtoMethod:  "TestPrivate",
-		AccessRole:   domain.RoleUser,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/test/public",
-		ProtoService: "TestService",
-		ProtoMethod:  "TestPublic",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	// TODOService
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/projects/create",
-		ProtoService: "ToDoService",
-		ProtoMethod:  "CreateProject",
-		AccessRole:   domain.RoleUser,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	// ProfilesService
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/profile",
-		ProtoService: "ProfilesService",
-		ProtoMethod:  "Get",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	err = d.routerService.Handle(domain.Route{
-		HttpMethod:   "POST",
-		HttpAddress:  "/profiles/update",
-		ProtoService: "ProfilesService",
-		ProtoMethod:  "Update",
-		AccessRole:   domain.RoleGuest,
-	})
-	if err != nil {
-		return errors.Wrap(err, "cannot register route")
-	}
-
-	return nil
+	// To client
+	c.Writer.Write(bytes)
 }

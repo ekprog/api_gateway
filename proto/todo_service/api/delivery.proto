@@ -5,7 +5,24 @@ option go_package = "pb/api";
 import "api/app.proto";
 import "api/message.proto";
 
-// GET PROFILE
+// GET PROJECTS
+
+message GetProjectsRequest {
+  optional bool trashed = 1;
+  optional bool withTasks = 2;
+}
+
+message GetProjectsResponse {
+  Status status = 1;
+  repeated Project projects = 2;
+}
+
+message GetProjectInfoResponse {
+  Status status = 1;
+  Project project = 2;
+}
+
+// CREATE PROJECTS
 
 message CreateProjectRequest {
   string name = 1;
@@ -13,7 +30,62 @@ message CreateProjectRequest {
   string color = 3;
 }
 
-message CreateProjectResponse {
-  StatusResponse status = 1;
-  int64 Id = 2;
+// GET TASKS
+
+message GetTasksRequest {
+  optional int32 projectId = 1;
+  optional bool done = 2;
+  optional int32 offset = 3;
+  optional int32 limit = 4;
+}
+
+message GetTasksResponse {
+  Status status = 1;
+  repeated Task tasks = 2;
+}
+
+// CREATE TASK
+
+message CreateTaskRequest {
+  optional int32 project_id = 1;
+  string name = 2;
+  optional string desc = 3;
+  int32 priority = 4;
+}
+
+message CreateSmartTaskRequest {
+  optional int32 project_id = 1;
+  string name = 2;
+  optional string desc = 3;
+  int32 priority = 4;
+  repeated GenerationItem generation_items = 5;
+}
+
+
+// UPDATE TASK
+
+message UpdateTaskRequest {
+  int32 task_id = 1;
+  string name = 2;
+  optional string desc = 3;
+  int32 priority = 4;
+}
+
+// SET DONE
+message SetTaskDoneRequest {
+  int32 task_id = 1;
+  bool done = 2;
+}
+
+// GET SMART TASKS
+
+message GetSmartTasksRequest {
+  optional bool trashed = 1;
+  optional int32 offset = 2;
+  optional int32 limit = 3;
+}
+
+message GetSmartTasksResponse {
+  Status status = 1;
+  repeated SmartTask tasks = 2;
 }

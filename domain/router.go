@@ -1,25 +1,19 @@
 package domain
 
-import "github.com/gin-gonic/gin"
-
-type Service struct {
-	ProtoServiceName string
-	ProtoDir         string
-	ProtoFilename    string
-	HttpAddress      string
-}
-
 type Route struct {
+	Id           int64
 	HttpMethod   string
 	HttpAddress  string
+	Instance     string
 	ProtoService string
 	ProtoMethod  string
 	AccessRole   AccessRole
+	IsActive     bool
 }
 
-type RouterService interface {
-	SetRouter(group *gin.RouterGroup)
-	MakeService(Service) error
-	SetAuthService(string) error
-	Handle(Route) error
+type RoutesRepository interface {
+	All() ([]*Route, error)
+	GetByAddress(addr string) (*Route, error)
+	Insert(*Route) error
+	Delete(int64) error
 }

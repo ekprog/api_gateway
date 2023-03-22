@@ -1,0 +1,25 @@
+app:
+  debug: true
+  grpc:
+    tsl: false
+    port: 8071
+
+db:
+  enabled: true
+  driver: postgres
+  host: localhost
+  port: 5432
+  name: iredy_todo_service
+  user: postgres
+  pass: qwerty
+
+storage:
+  path: ./storage
+
+jobs:
+  enabled: false
+
+kafka:
+  enabled: true
+  brokers:
+    - 0.0.0.0:0

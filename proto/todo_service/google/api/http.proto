@@ -102,7 +102,7 @@ message Http {
 //         string subfield = 1;
 //       }
 //       string message_id = 1; // Mapped to URL path.
-//       int64 revision = 2;    // Mapped to URL query parameter `revision`.
+//       int32 revision = 2;    // Mapped to URL query parameter `revision`.
 //       SubMessage sub = 3;    // Mapped to URL query parameter `sub.subfield`.
 //     }
 //

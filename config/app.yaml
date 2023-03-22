@@ -1,0 +1,21 @@
+app:
+  debug: true
+  rest:
+    tsl: false
+    host: 127.0.0.1
+    port: 8080
+
+db:
+  enabled: false
+  driver: postgres
+  host: 127.0.0.1
+  port: 5431
+  name: postgres
+  user: postgres
+  pass: secret
+
+storage:
+  path: ./storage
+
+jobs:
+  enabled: false

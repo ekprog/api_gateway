@@ -2,11 +2,34 @@ syntax = "proto3";
 
 option go_package = "pb/api";
 
+import "api/app.proto";
 import "api/delivery.proto";
 
 package pb;
 
+//
+service StatusService {
+  rpc Ping (EmptyMessage) returns (StatusResponse) {}
+}
+
+
 // The service definition
 service ToDoService {
-  rpc CreateProject (CreateProjectRequest) returns (CreateProjectResponse) {}
+
+  // Projects
+  rpc GetProjects (GetProjectsRequest) returns (GetProjectsResponse) {}
+  rpc GetProjectInfo (IdRequest) returns (GetProjectInfoResponse) {}
+  rpc CreateProject (CreateProjectRequest) returns (IdResponse) {}
+  rpc RemoveProject (IdRequest) returns (StatusResponse) {}
+
+  //Tasks
+  rpc GetTasks (GetTasksRequest) returns (GetTasksResponse) {}
+  rpc CreateTask (CreateTaskRequest) returns (IdResponse) {}
+  rpc UpdateTask (UpdateTaskRequest) returns (StatusResponse) {}
+  rpc SetTaskDone (SetTaskDoneRequest) returns (StatusResponse) {}
+  rpc RemoveTask (IdRequest) returns (StatusResponse) {}
+
+  // Smart Tasks
+//  rpc CreateSmartTask (CreateSmartTaskRequest) returns (IdResponse) {}
+  rpc GetSmartTasks (GetSmartTasksRequest) returns (GetSmartTasksResponse) {}
 }

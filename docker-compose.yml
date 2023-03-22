@@ -1,0 +1,44 @@
+version: "3.7"
+services:
+
+  postgres:
+    image: postgres:latest
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+    hostname: ${DB_HOST}
+    environment:
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - ./storage/database/postgres:/var/lib/postgresql/data
+    networks:
+      - fullstack
+
+  api_gw:
+    image: egorkozelskij/api_gw3
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+    command: /app/server
+    env_file:
+      - .env
+    expose:
+      - ${REST_PORT}
+    ports:
+      - ${REST_PORT}:${REST_PORT}
+    networks:
+      - fullstack
+    depends_on:
+      postgres:
+        condition: service_healthy
+networks:
+  fullstack:
+    driver: bridge

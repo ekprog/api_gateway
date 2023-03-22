@@ -2,7 +2,27 @@ syntax = "proto3";
 
 option go_package = "pb/api";
 
-message StatusResponse {
+import "google/protobuf/struct.proto";
+
+message Status {
   string code = 1;
   string message = 2;
 }
+
+// Requests
+
+message IdRequest {
+  int32 id = 1;
+}
+
+// Responses
+message StatusResponse {
+  Status status = 1;
+}
+
+message IdResponse {
+  Status status = 1;
+  int32 id = 2;
+}
+
+message EmptyMessage {}

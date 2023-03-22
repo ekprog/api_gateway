@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option go_package = "pb/events";
+
+message TestEvent {
+  string Hello = 1;
+}

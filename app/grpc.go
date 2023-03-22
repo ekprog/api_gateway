@@ -6,14 +6,16 @@ import (
 	"crypto/x509"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"io/ioutil"
 	"net"
-	"os"
+	"strconv"
 )
 
 var (
@@ -27,7 +29,7 @@ func InitGRPCServer() (*grpc.Server, *runtime.ServeMux, error) {
 	var options []grpc.ServerOption
 
 	// TSL
-	tslEnable := os.Getenv("TSL_ENABLE") == "true"
+	tslEnable := viper.GetString("app.grpc.tsl") == "true"
 	if tslEnable {
 		crt := "./cert/service.pem"
 		key := "./cert/service.key"
@@ -39,7 +41,7 @@ func InitGRPCServer() (*grpc.Server, *runtime.ServeMux, error) {
 			return nil, nil, errors.New("cannot initialize GRPC Server")
 		}
 
-		// Create a certificate pool from the certificate authority
+		// CreateIfNotExists a certificate pool from the certificate authority
 		certPool := x509.NewCertPool()
 		ca, err := ioutil.ReadFile(caN)
 		if err != nil {
@@ -51,7 +53,7 @@ func InitGRPCServer() (*grpc.Server, *runtime.ServeMux, error) {
 			return nil, nil, errors.New("failed to append client certs")
 		}
 
-		// Create the TLS credentials
+		// CreateIfNotExists the TLS credentials
 		creds := credentials.NewTLS(&tls.Config{
 			ClientAuth:   tls.RequireAndVerifyClientCert,
 			Certificates: []tls.Certificate{certificate},
@@ -65,7 +67,7 @@ func InitGRPCServer() (*grpc.Server, *runtime.ServeMux, error) {
 		grpc.ChainUnaryInterceptor(errorLogging),
 	}...)
 
-	// Create server
+	// CreateIfNotExists server
 	grpcServer = grpc.NewServer(options...)
 	if grpcServer == nil {
 		return nil, nil, errors.New("cannot initialize GRPC Server")
@@ -78,11 +80,11 @@ func InitGRPCServer() (*grpc.Server, *runtime.ServeMux, error) {
 
 func RunGRPCServer() {
 
-	gRPCPort := os.Getenv("GRPC_PORT")
+	gRPCPort := viper.GetString("app.grpc.port")
 
 	reflection.Register(grpcServer)
 
-	lis, err := net.Listen("tcp", "localhost:"+gRPCPort)
+	lis, err := net.Listen("tcp", ":"+gRPCPort)
 	if err != nil {
 		log.Fatal("%v", err)
 	}
@@ -126,4 +128,21 @@ func errorLogging(ctx context.Context, req interface{}, info *grpc.UnaryServerIn
 	}
 
 	return h, nil
+}
+
+// Tools
+
+func ExtractRequestUserId(ctx context.Context) (int32, error) {
+	m, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		userIds := m.Get("user_id")
+		if len(userIds) > 0 {
+			userId, err := strconv.ParseInt(userIds[0], 10, 32)
+			if err != nil {
+				return -1, errors.Wrap(err, "cannot parse user_id")
+			}
+			return int32(userId), nil
+		}
+	}
+	return -1, errors.New("user_id was not found into context")
 }

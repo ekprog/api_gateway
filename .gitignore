@@ -1,0 +1,10 @@
+.env
+./logs/**/*
+./cert/ca.*
+./cert/service.*
+/pkg
+/pkg/**/*
+.idea
+config.yaml
+storage
+./proto/**/*

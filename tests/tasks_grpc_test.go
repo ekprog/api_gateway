@@ -1,8 +1,6 @@
 package tests
 
 import (
-	"api_gateway/domain"
-	pb "api_gateway/pkg/pb/api"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -13,6 +11,8 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"io/ioutil"
+	"microservice/domain"
+	pb "microservice/pkg/pb/api"
 	"os"
 	"testing"
 	"time"

@@ -1,20 +1,33 @@
 package app
 
 import (
-	"api_gateway/app/logs_hooks"
+	"fmt"
+	"github.com/pkg/errors"
 	logrus "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+	"microservice/app/core"
+	"microservice/app/logs_hooks"
 	"os"
+	"path"
 )
 
 var (
-	log Logger
+	log core.Logger
 )
 
-func InitLogs(rootDir ...string) (Logger, error) {
+func InitLogs(rootDir ...string) (core.Logger, error) {
 
 	basePath := "."
 	if len(rootDir) != 0 {
 		basePath = rootDir[0]
+	}
+
+	p := path.Join(basePath, "logs")
+	if _, err := os.Stat(p); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(p, os.ModePerm)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot mkdir for logs")
+		}
 	}
 
 	//log.SetFormatter(&easy.Formatter{
@@ -28,7 +41,7 @@ func InitLogs(rootDir ...string) (Logger, error) {
 		DisableTimestamp: true,
 	})
 	logrusLogger.SetReportCaller(true)
-	if os.Getenv("APP_DEBUG") == "true" {
+	if viper.GetString("app.debug") == "true" {
 		logrusLogger.SetLevel(logrus.TraceLevel)
 	} else {
 		logrusLogger.SetLevel(logrus.InfoLevel)
@@ -40,14 +53,6 @@ func InitLogs(rootDir ...string) (Logger, error) {
 
 	log = NewDefaultLogger(logrusLogger)
 	return log, nil
-}
-
-type Logger interface {
-	Debug(msg string, args ...interface{})
-	Warn(msg string, args ...interface{})
-	Info(msg string, args ...interface{})
-	Error(msg string, args ...interface{})
-	Fatal(msg string, args ...interface{})
 }
 
 type DefaultLogger struct {
@@ -76,4 +81,29 @@ func (l *DefaultLogger) Error(msg string, args ...interface{}) {
 
 func (l *DefaultLogger) Fatal(msg string, args ...interface{}) {
 	l.logger.Fatalf(msg, args...)
+}
+
+func (l *DefaultLogger) DebugWrap(err error, msg string, args ...interface{}) {
+	msg = fmt.Sprintf(msg, args...)
+	l.logger.Debugf("%s: %s", msg, err.Error())
+}
+
+func (l *DefaultLogger) WarnWrap(err error, msg string, args ...interface{}) {
+	msg = fmt.Sprintf(msg, args...)
+	l.logger.Warnf("%s: %s", msg, err.Error())
+}
+
+func (l *DefaultLogger) InfoWrap(err error, msg string, args ...interface{}) {
+	msg = fmt.Sprintf(msg, args...)
+	l.logger.Infof("%s: %s", msg, err.Error())
+}
+
+func (l *DefaultLogger) ErrorWrap(err error, msg string, args ...interface{}) {
+	msg = fmt.Sprintf(msg, args...)
+	l.logger.Errorf("%s: %s", msg, err.Error())
+}
+
+func (l *DefaultLogger) FatalWrap(err error, msg string, args ...interface{}) {
+	msg = fmt.Sprintf(msg, args...)
+	l.logger.Fatalf("%s: %s", msg, err.Error())
 }
