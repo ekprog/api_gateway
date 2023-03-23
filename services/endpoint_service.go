@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -25,14 +26,14 @@ func NewEndpointConnectionService(log core.Logger, instancesRepo domain.Instance
 		instancesRepo: instancesRepo}
 }
 
-func (s *EndpointConnectionService) GetConn(instanceName string) (*grpc.ClientConn, error) {
-	conn, _, err := s.GetConnWithStatus(instanceName)
+func (s *EndpointConnectionService) GetConn(ctx context.Context, instanceName string) (*grpc.ClientConn, error) {
+	conn, _, err := s.GetConnWithStatus(ctx, instanceName)
 	return conn, err
 }
 
 // GetConnWithStatus also return bool status if new value was fetched
-func (s *EndpointConnectionService) GetConnWithStatus(instanceName string) (*grpc.ClientConn, bool, error) {
-	instance, err := s.instancesRepo.GetByFolder(instanceName)
+func (s *EndpointConnectionService) GetConnWithStatus(ctx context.Context, instanceName string) (*grpc.ClientConn, bool, error) {
+	instance, err := s.instancesRepo.GetByFolder(ctx, instanceName)
 	if err != nil {
 		return nil, false, errors.Wrapf(err, "cannot get %s instance", instanceName)
 	}

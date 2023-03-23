@@ -1,5 +1,10 @@
 package domain
 
+import (
+	"context"
+	"microservice/app/core"
+)
+
 type Route struct {
 	Id           int64
 	HttpMethod   string
@@ -7,13 +12,13 @@ type Route struct {
 	Instance     string
 	ProtoService string
 	ProtoMethod  string
-	AccessRole   AccessRole
+	AccessRole   core.AccessRole
 	IsActive     bool
 }
 
 type RoutesRepository interface {
-	All() ([]*Route, error)
-	GetByAddress(addr string) (*Route, error)
-	Insert(*Route) error
-	Delete(int64) error
+	All(context.Context) ([]*Route, error)
+	GetByAddress(ctx context.Context, addr string) (*Route, error)
+	Insert(context.Context, *Route) error
+	Delete(context.Context, int64) error
 }

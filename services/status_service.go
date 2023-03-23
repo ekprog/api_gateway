@@ -34,7 +34,7 @@ func NewStatusService(log core.Logger,
 
 // CheckAll checks every service for itself status
 func (s *StatusService) CheckAll(ctx context.Context) error {
-	items, err := s.instancesRepo.All()
+	items, err := s.instancesRepo.All(ctx)
 	if err != nil {
 		return errors.Wrap(err, "cannot check services for status")
 	}
@@ -63,12 +63,12 @@ func (s *StatusService) GetStatus(ctx context.Context, instanceName string) (boo
 		Method:   "Ping",
 	}
 
-	response := &domain.StatusResponse{}
+	response := &core.StatusResponse{}
 	_, err := s.callerService.CallAndParse(ctx, callOptions, response)
 	if err != nil {
 		return false, errors.Wrapf(err, "cannot check status of %s", instanceName)
 	}
-	if response == nil || response.Status.Code != domain.Success {
+	if response == nil || response.Status.Code != core.Success {
 		return false, errors.Errorf("not success status code")
 	}
 	return true, nil

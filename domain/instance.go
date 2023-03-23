@@ -1,40 +1,36 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"microservice/app/core"
+	"microservice/tools"
+)
 
 type Instance struct {
-	Id       int64  `json:"id"`
-	Name     string `json:"name"`
-	Folder   string `json:"folder"`
-	Endpoint string `json:"endpoint"`
-	IsActive bool   `json:"is_active"`
+	Id       int32
+	Name     string
+	Folder   string
+	Endpoint string
+	IsActive bool
 
 	// after StatusService
-	Status bool `json:"status"`
+	Status bool
 }
 
 type InstancesRepository interface {
-	All() ([]*Instance, error)
-	GetByFolder(string) (*Instance, error)
-	Insert(*Instance) error
-	Delete(int64) error
-	Update(instance *Instance) error
+	All(context.Context) ([]*Instance, error)
+	GetByFolder(context.Context, string) (*Instance, error)
+	Insert(context.Context, *Instance) error
+	Delete(context.Context, int32) error
+	Update(context.Context, *tools.UpdateReq) error
 }
 
-type InstancesInteractor interface {
+type InstancesUCase interface {
 	All(context.Context) (*InstancesAllResponse, error)
-	Update(request UpdateInstanceRequest) (*StatusResponse, error)
+	Update(context.Context, *tools.UpdateReq) (*core.StatusResponse, error)
 }
 
 // Delivery
-
-type UpdateInstanceRequest struct {
-	Id       *int64  `json:"id"`
-	Folder   *string `json:"folder"`
-	Endpoint *string `json:"endpoint"`
-	IsActive *string `json:"is_active"`
-}
-
 type InstancesAllResponse struct {
 	StatusCode string      `json:"status"`
 	Instances  []*Instance `json:"services"`

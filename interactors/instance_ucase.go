@@ -6,6 +6,7 @@ import (
 	"microservice/app/core"
 	"microservice/domain"
 	"microservice/services"
+	"microservice/tools"
 )
 
 type InstanceInteractor struct {
@@ -25,7 +26,7 @@ func NewInstanceInteractor(log core.Logger,
 }
 
 func (s *InstanceInteractor) All(ctx context.Context) (*domain.InstancesAllResponse, error) {
-	items, err := s.servicesRepo.All()
+	items, err := s.servicesRepo.All(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "error while getting services list %s")
 	}
@@ -42,20 +43,20 @@ func (s *InstanceInteractor) All(ctx context.Context) (*domain.InstancesAllRespo
 	}
 
 	return &domain.InstancesAllResponse{
-		StatusCode: domain.Success,
+		StatusCode: core.Success,
 		Instances:  items,
 	}, nil
 }
 
-func (s *InstanceInteractor) Update(request domain.UpdateInstanceRequest) (*domain.StatusResponse, error) {
-	//err := s.servicesRepo.Update(instance)
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "error while updating instance")
-	//}
-	return &domain.StatusResponse{
-		Status: domain.Status{
-			Code:    domain.Success,
-			Message: domain.Success,
+func (s *InstanceInteractor) Update(ctx context.Context, req *tools.UpdateReq) (*core.StatusResponse, error) {
+
+	err := s.servicesRepo.Update(ctx, req)
+	if err != nil {
+		return nil, errors.Wrap(err, "error while updating instance")
+	}
+	return &core.StatusResponse{
+		Status: core.Status{
+			Code: core.Success,
 		},
 	}, nil
 }

@@ -1,9 +1,12 @@
 package repos
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"microservice/app/core"
 	"microservice/domain"
+	"microservice/tools"
 )
 
 type InstancesRepo struct {
@@ -18,7 +21,7 @@ func NewInstancesRepo(log core.Logger, db *sql.DB) *InstancesRepo {
 	}
 }
 
-func (r *InstancesRepo) All() ([]*domain.Instance, error) {
+func (r *InstancesRepo) All(ctx context.Context) ([]*domain.Instance, error) {
 	var items []*domain.Instance
 
 	query := `SELECT id, 
@@ -28,7 +31,7 @@ func (r *InstancesRepo) All() ([]*domain.Instance, error) {
 			FROM services 
 			WHERE deleted_at is null
 			ORDER BY created_at;`
-	raws, err := r.db.Query(query)
+	raws, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +50,7 @@ func (r *InstancesRepo) All() ([]*domain.Instance, error) {
 	return items, nil
 }
 
-func (r *InstancesRepo) GetByFolder(folder string) (*domain.Instance, error) {
+func (r *InstancesRepo) GetByFolder(ctx context.Context, folder string) (*domain.Instance, error) {
 	item := &domain.Instance{}
 
 	query := `SELECT id, 
@@ -57,7 +60,7 @@ func (r *InstancesRepo) GetByFolder(folder string) (*domain.Instance, error) {
 			FROM services 
 			WHERE deleted_at is null and folder=$1
 			ORDER BY created_at;`
-	err := r.db.QueryRow(query, folder).Scan(&item.Id,
+	err := r.db.QueryRowContext(ctx, query, folder).Scan(&item.Id,
 		&item.Folder,
 		&item.Endpoint,
 		&item.IsActive)
@@ -71,10 +74,11 @@ func (r *InstancesRepo) GetByFolder(folder string) (*domain.Instance, error) {
 	}
 }
 
-func (r *InstancesRepo) Insert(item *domain.Instance) error {
-	var id int64
+func (r *InstancesRepo) Insert(ctx context.Context, item *domain.Instance) error {
+	var id int32
 	query := "INSERT INTO services (folder, endpoint) VALUES ($1, $2) returning id"
-	err := r.db.QueryRow(query, item.Folder, item.Endpoint).Scan(&id)
+
+	err := r.db.QueryRowContext(ctx, query, item.Folder, item.Endpoint).Scan(&id)
 	if err != nil {
 		return err
 	}
@@ -82,18 +86,19 @@ func (r *InstancesRepo) Insert(item *domain.Instance) error {
 	return nil
 }
 
-func (r *InstancesRepo) Delete(id int64) error {
+func (r *InstancesRepo) Delete(ctx context.Context, id int32) error {
 	query := "UPDATE services SET deleted_at=now() WHERE id=$1"
-	_, err := r.db.Exec(query, id)
+	_, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *InstancesRepo) Update(instance *domain.Instance) error {
-	query := "UPDATE services SET folder=$2, endpoint=$3, is_active=$4, updated_at=now() WHERE id=$1"
-	_, err := r.db.Exec(query, instance.Id, instance.Folder, instance.IsActive)
+func (r *InstancesRepo) Update(ctx context.Context, req *tools.UpdateReq) error {
+	k, v := req.BuildFor("folder", "endpoint", "is_active")
+	query := fmt.Sprintf("UPDATE services SET %s, updated_at=now() WHERE id=$1", k)
+	_, err := r.db.ExecContext(ctx, query, v...)
 	if err != nil {
 		return err
 	}

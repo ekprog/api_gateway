@@ -1,18 +1,20 @@
 package delivery
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"microservice/app/core"
+	"microservice/app/rest"
+	"microservice/delivery/forms"
 	"microservice/domain"
 	"microservice/services"
+	"microservice/tools"
 	"strconv"
 )
 
 type AdminDelivery struct {
 	log            core.Logger
-	instancesUCase domain.InstancesInteractor
+	instancesUCase domain.InstancesUCase
 	routesRepo     domain.RoutesRepository
 
 	authService         *services.AuthService
@@ -20,7 +22,7 @@ type AdminDelivery struct {
 }
 
 func NewAdminDelivery(log core.Logger,
-	instancesUCase domain.InstancesInteractor,
+	instancesUCase domain.InstancesUCase,
 	authService *services.AuthService) *AdminDelivery {
 	return &AdminDelivery{
 		log:            log,
@@ -30,8 +32,8 @@ func NewAdminDelivery(log core.Logger,
 }
 
 func (d *AdminDelivery) Route(g *gin.RouterGroup) error {
-	g.Use(d.ErrorMW)
-	g.Use(d.GeneralMW)
+	g.Use(rest.GeneralMW)
+	g.Use(rest.ErrorMW)
 	g.Use(d.AdminAuthMW)
 
 	g.POST("/services", d.Services)
@@ -40,58 +42,62 @@ func (d *AdminDelivery) Route(g *gin.RouterGroup) error {
 	return nil
 }
 
-func (d *AdminDelivery) GeneralMW(c *gin.Context) {
-	c.Header("content-type", "application/json")
-}
+func (d *AdminDelivery) AdminAuthMW(ctx *gin.Context) {
 
-func (d *AdminDelivery) ErrorMW(c *gin.Context) {
-	c.Next()
-	if len(c.Errors) > 0 {
-		err := c.Errors[0].Err
-		d.log.ErrorWrap(err, "Request error")
-		c.JSON(500, domain.ServerError())
+	// Extract token
+	authTokens := ctx.Request.Header["Authorization"]
+	if authTokens == nil || len(authTokens) <= 0 {
+		ctx.AbortWithStatusJSON(500, rest.UnauthorizedError())
+		return
 	}
-}
+	authToken := authTokens[0]
+	d.log.Debug("Authorization access with token: %s", authToken)
 
-func (d *AdminDelivery) AdminAuthMW(c *gin.Context) {
-	user, err := d.authService.VerifyRequest(c, domain.RoleSuperAdmin)
+	user, err := d.authService.Verify(ctx, authToken, core.RoleSuperAdmin)
 	if err != nil {
-		_ = c.Error(errors.Wrap(err, "error while verifying admin request"))
-		c.JSON(500, domain.ServerError())
+		_ = ctx.Error(errors.Wrap(err, "error while verifying admin request"))
+		ctx.AbortWithStatusJSON(500, rest.ServerError())
 		return
 	}
 	if user == nil {
-		c.JSON(500, domain.UnauthorizedError())
+		ctx.AbortWithStatusJSON(500, rest.UnauthorizedError())
 		return
 	}
-	c.Header("user_id", strconv.FormatInt(user.Id, 10))
-	c.Next()
+	ctx.Header("user_id", strconv.FormatInt(user.Id, 10))
+	ctx.Next()
 }
 
-func (d *AdminDelivery) Services(c *gin.Context) {
-	res, err := d.instancesUCase.All(c)
+func (d *AdminDelivery) Services(ctx *gin.Context) {
+	res, err := d.instancesUCase.All(ctx)
 	if err != nil {
-		_ = c.AbortWithError(500, errors.Wrap(err, "error while services_all ucase"))
+		_ = ctx.AbortWithError(500, errors.Wrap(err, "error while services_all ucase"))
 		return
 	}
-	c.JSON(200, res)
+	ctx.JSON(200, res)
 }
 
-func (d *AdminDelivery) Update(c *gin.Context) {
+func (d *AdminDelivery) Update(ctx *gin.Context) {
 
-	request := domain.UpdateInstanceRequest{}
-
-	err := json.NewDecoder(c.Request.Body).Decode(&request)
+	// Validation
+	reqObj := &forms.InstanceUpdateForm{}
+	err := ctx.BindJSON(reqObj)
 	if err != nil {
-		_ = c.AbortWithError(500, errors.Wrap(err, "validation error"))
-		c.JSON(500, domain.ValidationError())
+		ctx.Abort() // err already in context
 		return
 	}
 
-	res, err := d.instancesUCase.Update(request)
+	// To Update request
+	updateReq, err := tools.NewUpdateReqReader(ctx.Request.Body)
 	if err != nil {
-		_ = c.AbortWithError(500, errors.Wrap(err, "error while services_all ucase"))
+		ctx.AbortWithStatusJSON(500, rest.ValidationError())
 		return
 	}
-	c.JSON(200, res)
+
+	//
+	res, err := d.instancesUCase.Update(ctx, updateReq)
+	if err != nil {
+		_ = ctx.AbortWithError(500, errors.Wrap(err, "error while services_all ucase"))
+		return
+	}
+	ctx.JSON(200, res)
 }

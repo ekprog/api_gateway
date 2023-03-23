@@ -13,7 +13,7 @@ import (
 
 func initDependencies(di *dig.Container) error {
 
-	// Repos
+	// Repositories
 	_ = di.Provide(
 		repos.NewInstancesRepo,
 		dig.As(new(domain.InstancesRepository)),
@@ -30,10 +30,15 @@ func initDependencies(di *dig.Container) error {
 	_ = di.Provide(services.NewStatusService)
 	_ = di.Provide(services.NewProtoCallerService)
 
-	// Use case
+	// Use cases
 	_ = di.Provide(
 		interactors.NewInstanceInteractor,
-		dig.As(new(domain.InstancesInteractor)),
+		dig.As(new(domain.InstancesUCase)),
+	)
+
+	_ = di.Provide(
+		interactors.NewRedirectUCase,
+		dig.As(new(domain.RedirectUCase)),
 	)
 
 	// Delivery init

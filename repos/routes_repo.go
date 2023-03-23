@@ -1,6 +1,7 @@
 package repos
 
 import (
+	"context"
 	"database/sql"
 	"microservice/app/core"
 	"microservice/domain"
@@ -18,7 +19,7 @@ func NewRoutesRepo(log core.Logger, db *sql.DB) *RoutesRepo {
 	}
 }
 
-func (r *RoutesRepo) All() ([]*domain.Route, error) {
+func (r *RoutesRepo) All(ctx context.Context) ([]*domain.Route, error) {
 	var items []*domain.Route
 
 	query := `SELECT id, 
@@ -32,7 +33,7 @@ func (r *RoutesRepo) All() ([]*domain.Route, error) {
 			FROM routes 
 			WHERE deleted_at is null
 			ORDER BY created_at;`
-	raws, err := r.db.Query(query)
+	raws, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +55,7 @@ func (r *RoutesRepo) All() ([]*domain.Route, error) {
 	return items, nil
 }
 
-func (r *RoutesRepo) GetByAddress(addr string) (*domain.Route, error) {
+func (r *RoutesRepo) GetByAddress(ctx context.Context, addr string) (*domain.Route, error) {
 	item := &domain.Route{}
 
 	query := `SELECT id, 
@@ -68,7 +69,7 @@ func (r *RoutesRepo) GetByAddress(addr string) (*domain.Route, error) {
 			FROM routes 
 			WHERE deleted_at is null and from_address=$1
 			ORDER BY created_at;`
-	err := r.db.QueryRow(query, addr).Scan(&item.Id,
+	err := r.db.QueryRowContext(ctx, query, addr).Scan(&item.Id,
 		&item.HttpMethod,
 		&item.HttpAddress,
 		&item.Instance,
@@ -87,10 +88,10 @@ func (r *RoutesRepo) GetByAddress(addr string) (*domain.Route, error) {
 	}
 }
 
-func (r *RoutesRepo) Insert(item *domain.Route) error {
+func (r *RoutesRepo) Insert(ctx context.Context, item *domain.Route) error {
 	var id int64
 	query := "INSERT INTO routes (from_method, from_address, instance, proto_service, proto_method, access_role) VALUES ($1, $2, $3, $4, $5, $6) returning id"
-	err := r.db.QueryRow(query,
+	err := r.db.QueryRowContext(ctx, query,
 		item.HttpMethod,
 		item.HttpAddress,
 		item.Instance,
@@ -103,9 +104,9 @@ func (r *RoutesRepo) Insert(item *domain.Route) error {
 	return nil
 }
 
-func (r *RoutesRepo) Delete(id int64) error {
+func (r *RoutesRepo) Delete(ctx context.Context, id int64) error {
 	query := "UPDATE services SET deleted_at=now() WHERE id=$1"
-	_, err := r.db.Exec(query, id)
+	_, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

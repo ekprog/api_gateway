@@ -52,7 +52,7 @@ func (s *ProtoCallerService) Call(ctx context.Context, call ProtoCall) ([]byte, 
 	}
 
 	// Get connection
-	conn, err := s.endpointService.GetConn(call.Instance)
+	conn, err := s.endpointService.GetConn(ctx, call.Instance)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot get endpoint client for %s", call.Instance)
 	}
@@ -63,7 +63,7 @@ func (s *ProtoCallerService) Call(ctx context.Context, call ProtoCall) ([]byte, 
 	}
 	res, err := service.CallJsonWithContext(conn, ctx, call.Method, call.Data, call.Headers)
 	if err != nil {
-		return nil, errors.Wrapf(err, "in instance error (%s)", call.Instance)
+		return nil, errors.Wrapf(err, "in instance error (%s.%s.%s)", call.Instance, call.Service, call.Method)
 	}
 	s.log.Debug(fmt.Sprintf("response from %s: %s", call.Instance, (string)(res)))
 

@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/spf13/viper"
 	"time"
 )
@@ -12,6 +13,7 @@ var (
 )
 
 func Init() error {
+	binding.Validator = new(defaultValidator)
 	restServer = gin.Default()
 
 	// CORS
