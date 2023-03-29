@@ -12,7 +12,7 @@ type RedirectUCase interface {
 //
 
 type RedirectRouteRequest struct {
-	AuthToken string
+	AuthToken *string
 	Address   string
 	Data      []byte
 }

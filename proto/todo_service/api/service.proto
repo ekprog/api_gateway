@@ -7,7 +7,6 @@ import "api/delivery.proto";
 
 package pb;
 
-//
 service StatusService {
   rpc Ping (EmptyMessage) returns (StatusResponse) {}
 }

@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option go_package = "pb/api";
 
-import "google/protobuf/field_mask.proto";
 import "api/app.proto";
 import "api/message.proto";
 
@@ -19,7 +18,7 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-  StatusResponse status = 1;
+  Status status = 1;
 }
 
 // LOGIN
@@ -30,7 +29,7 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  StatusResponse status = 1;
+  Status status = 1;
   JWTAccess jwt_access = 2;
 }
 
@@ -41,7 +40,7 @@ message RevokeRequest {
 }
 
 message RevokeResponse {
-  StatusResponse status = 1;
+  Status status = 1;
 }
 
 // REFRESH
@@ -51,7 +50,7 @@ message RefreshRequest {
 }
 
 message RefreshResponse {
-  StatusResponse status = 1;
+  Status status = 1;
   JWTAccess jwt_access = 2;
 }
 
@@ -62,7 +61,7 @@ message VerifyRequest {
 }
 
 message VerifyResponse {
-  StatusResponse status = 1;
+  Status status = 1;
   User user = 2;
 }
 
@@ -75,6 +74,6 @@ message ListRequest {
 }
 
 message ListResponse {
-  StatusResponse status = 1;
+  Status status = 1;
   repeated User users = 2;
 }

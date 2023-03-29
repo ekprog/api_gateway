@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 	"microservice/app"
 	"microservice/app/core"
 )
@@ -61,6 +62,14 @@ func (s *ProtoCallerService) Call(ctx context.Context, call ProtoCall) ([]byte, 
 	if call.Data == nil {
 		call.Data = []byte("{}")
 	}
+	if call.Headers == nil {
+		call.Headers = make(map[string]string)
+	}
+
+	// Append AUTH header
+	appSecret := viper.GetString("app.secret")
+	call.Headers["Authorization"] = appSecret
+
 	res, err := service.CallJsonWithContext(conn, ctx, call.Method, call.Data, call.Headers)
 	if err != nil {
 		return nil, errors.Wrapf(err, "in instance error (%s.%s.%s)", call.Instance, call.Service, call.Method)

@@ -51,7 +51,7 @@ func (d *AdminDelivery) AdminAuthMW(ctx *gin.Context) {
 		return
 	}
 	authToken := authTokens[0]
-	d.log.Debug("Authorization access with token: %s", authToken)
+	d.log.Debug("Authorization access with token: %v", authToken)
 
 	user, err := d.authService.Verify(ctx, authToken, core.RoleSuperAdmin)
 	if err != nil {
@@ -63,7 +63,7 @@ func (d *AdminDelivery) AdminAuthMW(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(500, rest.UnauthorizedError())
 		return
 	}
-	ctx.Header("user_id", strconv.FormatInt(user.Id, 10))
+	ctx.Header("user_id", strconv.FormatInt(int64(user.Id), 10))
 	ctx.Next()
 }
 
@@ -89,7 +89,7 @@ func (d *AdminDelivery) Update(ctx *gin.Context) {
 	// To Update request
 	updateReq, err := tools.NewUpdateReqReader(ctx.Request.Body)
 	if err != nil {
-		ctx.AbortWithStatusJSON(500, rest.ValidationError())
+		ctx.Abort()
 		return
 	}
 
@@ -99,5 +99,7 @@ func (d *AdminDelivery) Update(ctx *gin.Context) {
 		_ = ctx.AbortWithError(500, errors.Wrap(err, "error while services_all ucase"))
 		return
 	}
+
+	//
 	ctx.JSON(200, res)
 }

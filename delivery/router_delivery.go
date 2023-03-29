@@ -29,15 +29,13 @@ func (d *RouterDelivery) Route(ctx *gin.Context) {
 
 	// Extract token
 	authTokens := ctx.Request.Header["Authorization"]
-	if authTokens == nil || len(authTokens) <= 0 {
-		ctx.JSON(500, core.StatusResponse{
-			Status: core.Status{
-				Code: core.Unauthorised,
-			}})
-		return
+	var authToken *string
+	if authTokens != nil && len(authTokens) > 0 {
+		authToken = &authTokens[0]
+		d.log.Debug("Authorization access with token: %v", authToken)
+	} else {
+		d.log.Debug("Call without token:")
 	}
-	authToken := authTokens[0]
-	d.log.Debug("Authorization access with token: %s", authToken)
 
 	// Parse body
 	body, err := io.ReadAll(ctx.Request.Body)

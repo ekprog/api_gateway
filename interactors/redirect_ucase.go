@@ -58,7 +58,15 @@ func (ucase *RedirectUCase) Route(ctx context.Context, req *domain.RedirectRoute
 
 	// AUTH
 	if route.AccessRole > core.RoleGuest {
-		user, err := ucase.authService.Verify(ctx, req.AuthToken, route.AccessRole)
+		if req.AuthToken == nil {
+			return &domain.RedirectRouteResponse{
+				Status: core.Status{
+					Code: core.Unauthorised,
+				},
+			}, nil
+		}
+
+		user, err := ucase.authService.Verify(ctx, *req.AuthToken, route.AccessRole)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error while verifying request")
 		}
@@ -69,8 +77,9 @@ func (ucase *RedirectUCase) Route(ctx context.Context, req *domain.RedirectRoute
 				},
 			}, nil
 		}
+
 		// Set headers
-		callOptions.Headers["user_id"] = strconv.FormatInt(user.Id, 10)
+		callOptions.Headers["user_id"] = strconv.FormatInt(int64(user.Id), 10)
 	}
 
 	//

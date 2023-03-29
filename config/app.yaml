@@ -1,4 +1,5 @@
 app:
+  secret: ""
   debug: true
   rest:
     tsl: false

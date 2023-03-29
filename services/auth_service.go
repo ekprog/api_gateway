@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
+	"google.golang.org/grpc/metadata"
 	"microservice/app/core"
 	"microservice/pkg/auth_service/api"
 )
@@ -47,6 +49,10 @@ func (s *AuthService) Verify(ctx context.Context, authToken string, needRole cor
 		AccessToken: authToken,
 	}
 
+	// Append app secret to call
+	appSecret := viper.GetString("app.secret")
+	ctx = metadata.AppendToOutgoingContext(ctx, "Authorization", appSecret)
+
 	verifyRes, err := s.client.Verify(ctx, verifyReq)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error while verifying access %s", authToken)
@@ -57,9 +63,9 @@ func (s *AuthService) Verify(ctx context.Context, authToken string, needRole cor
 		return nil, nil
 	}
 
-	// Here should be user role
-	if 9999 < needRole {
-		s.log.Debug("user role (%d) < need role (%d): token = %s", 9999, needRole, authToken)
+	realRole := core.AccessRole(verifyRes.User.Role)
+	if realRole < needRole {
+		s.log.Debug("user role (%d) < need role (%d): token = %s", realRole, needRole, authToken)
 		return nil, nil
 	}
 

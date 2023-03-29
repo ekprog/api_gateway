@@ -2,8 +2,6 @@ syntax = "proto3";
 
 option go_package = "pb/api";
 
-import "google/protobuf/struct.proto";
-
 message Status {
   string code = 1;
   string message = 2;

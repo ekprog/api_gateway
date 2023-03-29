@@ -1,6 +1,6 @@
 package core
 
-type AccessRole int
+type AccessRole int32
 
 const (
 	RoleGuest      AccessRole = 0

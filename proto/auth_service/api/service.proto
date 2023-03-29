@@ -7,10 +7,11 @@ import "api/app.proto";
 
 package pb;
 
-// Ping
+//
 service StatusService {
   rpc Ping (EmptyMessage) returns (StatusResponse) {}
 }
+
 
 
 // The service definition

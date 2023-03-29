@@ -7,14 +7,12 @@ import (
 )
 
 type Instance struct {
-	Id       int32
-	Name     string
-	Folder   string
-	Endpoint string
-	IsActive bool
-
-	// after StatusService
-	Status bool
+	Id       int32  `json:"id"`
+	Name     string `json:"name"`
+	Folder   string `json:"folder"`
+	Endpoint string `json:"endpoint"`
+	IsActive bool   `json:"is_active"`
+	Status   bool   `json:"status"`
 }
 
 type InstancesRepository interface {
