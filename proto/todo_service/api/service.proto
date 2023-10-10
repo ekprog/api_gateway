@@ -20,6 +20,9 @@ service ToDoService {
   rpc GetProjectInfo (IdRequest) returns (GetProjectInfoResponse) {}
   rpc CreateProject (CreateProjectRequest) returns (IdResponse) {}
   rpc RemoveProject (IdRequest) returns (StatusResponse) {}
+  rpc UpdateProject (UpdateProjectRequest) returns (StatusResponse) {}
+  rpc UpdateProjectsOrder (UpdateProjectOrderRequest) returns (StatusResponse) {}
+  rpc DragProjects (DragProjectRequest) returns (StatusResponse) {}
 
   //Tasks
   rpc GetTasks (GetTasksRequest) returns (GetTasksResponse) {}

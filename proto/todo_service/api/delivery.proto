@@ -28,6 +28,8 @@ message CreateProjectRequest {
   string name = 1;
   string desc = 2;
   string color = 3;
+  int32 order = 4;
+  optional int32 parentId = 5;
 }
 
 // GET TASKS
@@ -68,7 +70,33 @@ message UpdateTaskRequest {
   int32 task_id = 1;
   string name = 2;
   optional string desc = 3;
-  int32 priority = 4;
+  int32 priority = 5;
+}
+
+
+// UPDATE PROJECT
+
+message UpdateProjectRequest {
+  int32 project_id = 1;
+  string name = 2;
+  string desc = 3;
+  string color = 4;
+}
+
+message UpdateProjectOrderRequest {
+  repeated int32 projectIds = 1;
+}
+
+
+// DRAG PROJECTS
+message DragProjectItem {
+  int32 projectId = 1;
+  optional int32 parentId = 2;
+  int32 order = 3;
+}
+
+message DragProjectRequest {
+  repeated DragProjectItem items = 1;
 }
 
 // SET DONE
