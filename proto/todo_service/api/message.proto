@@ -11,9 +11,11 @@ message Project {
   string name = 3;
   string desc = 4;
   string color = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
-  google.protobuf.Timestamp deleted_at = 8;
+  int32 order = 6;
+  optional int32 parentId = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  google.protobuf.Timestamp deleted_at = 10;
 }
 
 message Task {

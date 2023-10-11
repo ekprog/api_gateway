@@ -51,7 +51,7 @@ func (d *AdminDelivery) AdminAuthMW(ctx *gin.Context) {
 		return
 	}
 	authToken := authTokens[0]
-	d.log.Debug("Authorization access with token: %v", authToken)
+	d.log.Debug("Authorization access with token: %s", authToken)
 
 	user, err := d.authService.Verify(ctx, authToken, core.RoleSuperAdmin)
 	if err != nil {

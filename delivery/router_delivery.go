@@ -32,7 +32,7 @@ func (d *RouterDelivery) Route(ctx *gin.Context) {
 	var authToken *string
 	if authTokens != nil && len(authTokens) > 0 {
 		authToken = &authTokens[0]
-		d.log.Debug("Authorization access with token: %v", authToken)
+		d.log.Debug("Authorization access with token: %v", *authToken)
 	} else {
 		d.log.Debug("Call without token:")
 	}
