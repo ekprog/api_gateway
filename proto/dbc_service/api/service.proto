@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option go_package = "pb/api";
+
+import "api/app.proto";
+import "api/delivery.proto";
+
+package pb;
+
+service StatusService {
+  rpc Ping (EmptyMessage) returns (StatusResponse) {}
+}
+
+
+// The service definition
+service DBCService {
+
+  // Categories
+  rpc GetCategories (GetCategoriesRequest) returns (GetCategoriesResponse) {}
+  rpc UpdateCategory (UpdateCategoriesRequest) returns (StatusResponse) {}
+
+  // Challenges
+  rpc GetChallenges (GetChallengesRequest) returns (GetChallengesResponse) {}
+  rpc CreateChallenge (CreateChallengeRequest) returns (CreateChallengesResponse) {}
+  rpc UpdateChallenge (UpdateChallengeRequest) returns (StatusResponse) {}
+  rpc RemoveChallenge (IdRequest) returns (StatusResponse) {}
+
+  rpc TrackDay (TrackDayRequest) returns (TrackDayResponse) {}
+}
+
+service UsersService {
+  rpc MyInfo (EmptyMessage) returns (GetUserResponse) {}
+  rpc Info (IdRequest) returns (GetUserResponse) {}
+}

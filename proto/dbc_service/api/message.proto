@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "pb/api";
+
+import "google/protobuf/timestamp.proto";
+
+
+message DBCCategory {
+  int32 id = 1;
+  int32 user_id = 2;
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
+}
+
+message DBCChallenge {
+  int32 id = 1;
+  int32 user_id = 2;
+  optional int32 category_id = 3;
+  string name = 4;
+  optional string desc = 5;
+  optional string image = 6;
+  int32 last_series = 7;
+  repeated DBTrack last_tracks = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+  google.protobuf.Timestamp deleted_at = 11;
+}
+
+message DBTrack {
+  google.protobuf.Timestamp date = 1;
+  string date_string = 2;
+  bool done = 3;
+}
+
+message User {
+  int32 id = 1;
+  int32 score = 2;
+  int32 score_daily = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
+}

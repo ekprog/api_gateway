@@ -23,7 +23,7 @@ services:
       - fullstack
 
   api_gw:
-    image: egorkozelskij/api_gw3
+    image: egorkozelskij/api_gateway
 #    build:
 #      context: .
 #      dockerfile: Dockerfile

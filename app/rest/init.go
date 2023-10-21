@@ -3,8 +3,10 @@ package rest
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 	"go.uber.org/dig"
 	"microservice/app/core"
+	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
@@ -65,5 +67,17 @@ func InitDeliveryDynamic(path string, f interface{}) error {
 		})
 		return nil
 	})
+}
 
+func InitImageServer(log core.Logger) {
+	port := viper.GetString("img.port")
+	imgPath := viper.GetString("img.path")
+
+	fs := http.FileServer(http.Dir(imgPath))
+	http.Handle("/static/", http.StripPrefix("/static", fs))
+	log.Info("Image server listening on port :" + port)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }

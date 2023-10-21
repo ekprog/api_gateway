@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+option go_package = "pb/api";
+
+import "api/app.proto";
+import "api/message.proto";
+import "google/protobuf/timestamp.proto";
+
+// GET CATEGORIES
+
+message GetCategoriesRequest {}
+
+message GetCategoriesResponse {
+  Status status = 1;
+  repeated DBCCategory categories = 2;
+}
+
+message UpdateCategoriesRequest {
+  int32 id = 1;
+  string name = 2;
+}
+
+message RemoveCategoriesRequest {
+  int32 id = 1;
+}
+
+
+// GET CHALLENGES
+
+message GetChallengesRequest {}
+
+message GetChallengesResponse {
+  Status status = 1;
+  repeated DBCChallenge challenges = 2;
+}
+
+message CreateChallengesResponse {
+  Status status = 1;
+  int32 id = 2;
+  optional int32 category_id = 3;
+}
+
+// CREATE CHALLENGE
+
+message CreateChallengeRequest {
+  optional string category_name = 1;
+  string name = 2;
+  optional string desc = 3;
+}
+
+// UPDATE CHALLENGE
+
+message UpdateChallengeRequest {
+  int32 challenge_id = 1;
+  string name = 2;
+  optional string desc = 3;
+}
+
+message GetUserResponse {
+  Status status = 1;
+  User user = 2;
+}
+
+message TrackDayRequest {
+  int32 challenge_id = 1;
+  string dateISO = 2;
+  bool done = 3;
+}
+
+message TrackDayResponse {
+  Status status = 1;
+  int32 last_series = 2;
+  int32 score_daily = 3;
+}
+

@@ -13,7 +13,7 @@ import (
 func Run(rootPath ...string) error {
 
 	// ENV, etc
-	err := app.InitApp(rootPath...)
+	ctx, _, err := app.InitApp(rootPath...)
 	if err != nil {
 		return errors.Wrap(err, "error while init app")
 	}
@@ -106,7 +106,11 @@ func Run(rootPath ...string) error {
 	}
 
 	// Run gRPC and block
-	rest.RunServer()
+	go rest.RunServer()
+	go rest.InitImageServer(logger)
+
+	// End context
+	<-ctx.Done()
 
 	return nil
 }
