@@ -4,7 +4,6 @@ option go_package = "pb/api";
 
 import "api/app.proto";
 import "api/message.proto";
-import "google/protobuf/timestamp.proto";
 
 // GET CATEGORIES
 
@@ -16,18 +15,24 @@ message GetCategoriesResponse {
 }
 
 message UpdateCategoriesRequest {
-  int32 id = 1;
+  int64 id = 1;
   string name = 2;
 }
 
 message RemoveCategoriesRequest {
-  int32 id = 1;
+  int64 id = 1;
 }
+
 
 
 // GET CHALLENGES
 
 message GetChallengesRequest {}
+
+message GetUserChallengesResponse {
+  Status status = 1;
+  repeated DBCUserChallenge challenges = 2;
+}
 
 message GetChallengesResponse {
   Status status = 1;
@@ -36,8 +41,18 @@ message GetChallengesResponse {
 
 message CreateChallengesResponse {
   Status status = 1;
-  int32 id = 2;
-  optional int32 category_id = 3;
+  int64 id = 2;
+  optional int64 category_id = 3;
+  bool is_auto_track = 4;
+}
+
+// SEARCH CHALLENGES
+
+message SearchChallengesRequest {
+  string search = 1;
+  optional int64 category_id = 2;
+  int64 limit = 3;
+  int64 offset = 4;
 }
 
 // CREATE CHALLENGE
@@ -46,12 +61,13 @@ message CreateChallengeRequest {
   optional string category_name = 1;
   string name = 2;
   optional string desc = 3;
+  bool is_auto_track = 4;
 }
 
 // UPDATE CHALLENGE
 
 message UpdateChallengeRequest {
-  int32 challenge_id = 1;
+  int64 challenge_id = 1;
   string name = 2;
   optional string desc = 3;
 }
@@ -62,14 +78,30 @@ message GetUserResponse {
 }
 
 message TrackDayRequest {
-  int32 challenge_id = 1;
+  int64 challenge_id = 1;
   string dateISO = 2;
   bool done = 3;
 }
 
 message TrackDayResponse {
   Status status = 1;
-  int32 last_series = 2;
-  int32 score_daily = 3;
+  int64 last_series = 2;
+  int64 score_daily = 3;
+}
+
+message GetMonthTracksRequest {
+  int64 challenge_id = 1;
+  string dateISO = 2;
+}
+
+message GetMonthTracksResponse {
+  Status status = 1;
+  repeated DBTrack tracks = 2;
+}
+
+message GetChallengeInfoResponse {
+  Status status = 1;
+  DBCChallenge challenge = 2;
+  bool isMember = 3;
 }
 

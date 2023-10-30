@@ -18,14 +18,20 @@ service DBCService {
   // Categories
   rpc GetCategories (GetCategoriesRequest) returns (GetCategoriesResponse) {}
   rpc UpdateCategory (UpdateCategoriesRequest) returns (StatusResponse) {}
+  rpc RemoveCategory (IdRequest) returns (StatusResponse){}
 
-  // Challenges
-  rpc GetChallenges (GetChallengesRequest) returns (GetChallengesResponse) {}
+  // Challenges (User scope)
+  rpc GetChallenges (GetChallengesRequest) returns (GetUserChallengesResponse) {}
   rpc CreateChallenge (CreateChallengeRequest) returns (CreateChallengesResponse) {}
   rpc UpdateChallenge (UpdateChallengeRequest) returns (StatusResponse) {}
   rpc RemoveChallenge (IdRequest) returns (StatusResponse) {}
 
+  // Challenges
+  rpc SearchChallenges(SearchChallengesRequest) returns (GetChallengesResponse) {}
+  rpc GetChallengeInfo(IdRequest) returns (GetChallengeInfoResponse) {}
+
   rpc TrackDay (TrackDayRequest) returns (TrackDayResponse) {}
+  rpc GetMonthTracks (GetMonthTracksRequest) returns (GetMonthTracksResponse) {}
 }
 
 service UsersService {
